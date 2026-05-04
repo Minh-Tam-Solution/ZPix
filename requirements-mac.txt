@@ -1,0 +1,11 @@
+# Python deps for macOS dev mode (mirrors start.ps1 default-path pins, minus Windows-only).
+# DROPPED vs Windows: triton-windows, flash-attention prebuilt wheel, +cu130 torch index.
+# SDNQ uint4 kernels are CUDA-only — they install but app.py guards their use behind
+# `torch.cuda.is_available() or torch.xpu.is_available()`, so on MPS they're inert.
+
+torch==2.10.0
+diffusers @ https://github.com/huggingface/diffusers/archive/b757035df6fe080b56a672c4000e458bb442821a.zip
+peft==0.18.1
+sdnq==0.1.6
+platformdirs==4.9.4
+gradio==6.10.0
