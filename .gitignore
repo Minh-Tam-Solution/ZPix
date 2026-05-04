@@ -9,3 +9,8 @@ vcpkg_installed
 *.dll
 *.exe
 DEBUG*
+
+# Claude Code / EndiorBot
+.claude/
+.endiorbot/
+.sdlc-framework

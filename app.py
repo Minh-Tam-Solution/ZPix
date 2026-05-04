@@ -201,16 +201,10 @@ def load_model(model: ImageModel) -> ImageModel:
             logging.warning(f"FlashAttention is not available: {e}")
 
     pipe.vae.to(memory_format=torch.channels_last)
-    if torch.cuda.is_available() or torch.xpu.is_available():
+    if torch.backends.mps.is_available():
+        pipe.enable_model_cpu_offload(device="mps")
+    else:
         pipe.enable_model_cpu_offload()
-    elif torch.backends.mps.is_available():
-        pipe.to("mps")
-        # Reduce peak unified-memory pressure on Apple Silicon: 24GB boxes hit
-        # swap on 1024² generations without these.
-        if hasattr(pipe, "enable_attention_slicing"):
-            pipe.enable_attention_slicing()
-        if hasattr(pipe, "enable_vae_slicing"):
-            pipe.enable_vae_slicing()
 
     return model
 
