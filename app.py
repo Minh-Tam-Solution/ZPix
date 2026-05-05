@@ -21,6 +21,7 @@ from sdnq.common import use_torch_compile as triton_is_available
 from sdnq.loader import apply_sdnq_options_to_model
 
 from source.py.disclaimer import TERMS_OF_USE, TermsOfUse
+from source.py.brand_template import BrandTemplate, find_brand, find_brand_by_name, get_brand_templates
 from source.py.ex_prompts import get_example_prompts
 from source.py.gen_history import (
     SEARCHABLE_PROMPTS,
@@ -318,6 +319,7 @@ def generate(
     cfg=0.0,
     gallery_images=None,
     lora_name: str | None = None,
+    brand: BrandTemplate | None = None,
 ):
     """Generate an image and possibly a seed, and update gallery.
 
@@ -349,10 +351,16 @@ def generate(
             duration=4,
         )
 
-    prompt: str = ""
+    user_prompt: str = ""
 
     if mm_prompt and mm_prompt.get("text"):
-        prompt = mm_prompt["text"]
+        user_prompt = mm_prompt["text"]
+
+    # Brand style prefix is prepended automatically (hidden from user)
+    if brand and brand.style_prefix:
+        prompt = f"{brand.style_prefix}, {user_prompt}"
+    else:
+        prompt = user_prompt
 
     width, height = parse_resolution(resolution)
     used_seed = randint(1, 1000000) if random_seed else int(seed)
@@ -397,7 +405,7 @@ def generate(
     # Prepare metadata to be saved in PNG text chunks.
     image_metadata = PngInfo()
     image_metadata.add_text("model", model.id)
-    image_metadata.add_itxt("prompt", prompt)
+    image_metadata.add_itxt("prompt", user_prompt)
     image_metadata.add_text("seed", str(used_seed))
     image_metadata.add_text("steps", str(steps))
     image_metadata.add_text("cfg", str(cfg))
@@ -419,7 +427,7 @@ def generate(
         gallery_images = []
 
     # Model and prompt are added as image caption.
-    caption = f"{t('Model:')} {model.name}\n{t('Prompt:')} {prompt}"
+    caption = f"{t('Model:')} {model.name}\n{t('Prompt:')} {user_prompt}"
     gallery_images.append((image_file, caption))
 
     return gallery_images, len(gallery_images) - 1, used_seed
@@ -437,6 +445,7 @@ if __name__ == "__main__":
         analytics_enabled=False,
     ) as app:
         models = get_models(app_dir / "data" / "curated_models.json")
+        brands = get_brand_templates(app_dir / "data" / "brand_templates.json")
         initial_model = load_model(models[0])
 
         model = gr.State(value=initial_model)
@@ -534,6 +543,23 @@ if __name__ == "__main__":
                 )
 
             with gr.Column():
+                with gr.Row():
+                    brand_select = gr.Dropdown(
+                        container=False,
+                        scale=1,
+                        choices=[(b.name, b.id) for b in brands],
+                        value="none",
+                        filterable=False,
+                        elem_id="brand-select",
+                    )
+                    gr.HTML(
+                        visible="hidden",
+                        js_on_load=f"""
+                            let select = document.getElementById("brand-select")
+                            select.title = "{t("Select a brand to apply style guidelines")}"
+                        """,
+                    )
+
                 with gr.Row():
                     model_select = gr.Dropdown(
                         container=False,
@@ -897,6 +923,9 @@ if __name__ == "__main__":
                     elem_id="examples",
                 )
 
+                with gr.Accordion(t("Brand Guidelines"), open=False) as brand_accordion:
+                    brand_guidelines = gr.Markdown("")
+
             with gr.Column(scale=2):
                 gallery_images = gr.Gallery(
                     label=t("Generated Images"),
@@ -981,6 +1010,34 @@ if __name__ == "__main__":
             show_progress="hidden",
         )
 
+        def update_brand_ui(brand_id: str):
+            b = find_brand(brand_id, brands)
+            if b.id == "none":
+                guidelines = t("Free style — no brand guidelines.")
+                example_prompts = get_example_prompts(
+                    app_dir / "data" / "example_prompts.json"
+                )
+            else:
+                do_list = "\n".join(f"- {item}" for item in b.do)
+                dont_list = "\n".join(f"- {item}" for item in b.dont)
+                guidelines = (
+                    f"**{t('Tone')}:** {b.tone}\n\n"
+                    f"**{t('DO')}:**\n{do_list}\n\n"
+                    f"**{t("DON'T")}:**\n{dont_list}\n\n"
+                    f"**{t('Hashtags')}:** {' '.join(b.hashtags)}"
+                )
+                example_prompts = b.example_prompts or get_example_prompts(
+                    app_dir / "data" / "example_prompts.json"
+                )
+            return b, gr.update(examples=example_prompts), guidelines
+
+        brand_select.change(
+            update_brand_ui,
+            inputs=brand_select,
+            outputs=[brand, examples, brand_guidelines],
+            show_progress="hidden",
+        )
+
         generate_btn.click(
             lambda: gr.update(interactive=False),
             outputs=model_select,
@@ -997,6 +1054,7 @@ if __name__ == "__main__":
                 cfg,
                 gallery_images,
                 lora_name,
+                brand,
             ],
             outputs=[gallery_images, last_image_index, seed],
             show_progress_on=gallery_images,

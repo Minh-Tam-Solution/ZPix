@@ -1,18 +1,37 @@
 // ZPix Tauri v2 — Native app wrapper with Python sidecar
+use std::os::unix::process::CommandExt;
 use std::path::PathBuf;
 use std::process::Stdio;
 use std::time::Duration;
 use tauri::{Emitter, Manager};
 use tokio::time::sleep;
 
+/// Resolve the project root directory containing start-mac.sh.
+/// Works both in dev (repo root) and in .app bundle.
+fn resolve_app_dir() -> Option<PathBuf> {
+    // Strategy 1: from current_exe (dev: target/release/zpix → 3× parent = repo root)
+    if let Ok(exe) = std::env::current_exe() {
+        for ancestor in [3, 4] {
+            if let Some(dir) = exe.ancestors().nth(ancestor) {
+                if dir.join("start-mac.sh").exists() {
+                    return Some(dir.to_path_buf());
+                }
+            }
+        }
+    }
+    // Strategy 2: current working dir
+    if let Ok(dir) = std::env::current_dir() {
+        if dir.join("start-mac.sh").exists() {
+            return Some(dir);
+        }
+    }
+    None
+}
+
 #[tauri::command]
 async fn start_python_sidecar(app: tauri::AppHandle) -> Result<String, String> {
-    let app_dir = std::env::current_dir().map_err(|e| e.to_string())?;
+    let app_dir = resolve_app_dir().ok_or("Cannot locate project root (start-mac.sh not found)")?;
     let script_path = app_dir.join("start-mac.sh");
-
-    if !script_path.exists() {
-        return Err(format!("start-mac.sh not found at {:?}", script_path));
-    }
 
     // Set model cache to app data dir so it's preserved across updates
     let cache_dir: PathBuf = app
@@ -40,12 +59,20 @@ async fn start_python_sidecar(app: tauri::AppHandle) -> Result<String, String> {
         cmd.env("ZPIX_OFFLINE", "1");
     }
 
+    // Create new process group so we can kill the whole tree (bash + Python grandchildren)
+    unsafe {
+        cmd.pre_exec(|| {
+            libc::setpgid(0, 0);
+            Ok(())
+        });
+    }
+
     let child = cmd
         .spawn()
         .map_err(|e| format!("Failed to spawn start-mac.sh: {}", e))?;
 
-    // Store child process in app state so we can kill it on exit
-    app.state::<SidecarState>().set(child);
+    let pgid = child.id() as i32;
+    app.state::<SidecarState>().set(child, pgid);
 
     // Poll Gradio health endpoint
     let client = reqwest::Client::new();
@@ -87,17 +114,34 @@ async fn is_online() -> bool {
 
 struct SidecarState {
     child: std::sync::Mutex<Option<std::process::Child>>,
+    pgid: std::sync::Mutex<i32>,
 }
 
 impl SidecarState {
     fn new() -> Self {
         Self {
             child: std::sync::Mutex::new(None),
+            pgid: std::sync::Mutex::new(0),
         }
     }
-    fn set(&self, child: std::process::Child) {
+    fn set(&self, child: std::process::Child, pgid: i32) {
         let mut lock = self.child.lock().unwrap();
         *lock = Some(child);
+        let mut pgid_lock = self.pgid.lock().unwrap();
+        *pgid_lock = pgid;
+    }
+    fn kill_group(&self) {
+        let pgid = *self.pgid.lock().unwrap();
+        if pgid > 0 {
+            unsafe {
+                libc::kill(-pgid, libc::SIGTERM);
+            }
+        }
+        if let Ok(mut lock) = self.child.lock() {
+            if let Some(mut child) = lock.take() {
+                let _ = child.kill();
+            }
+        }
     }
 }
 
@@ -117,11 +161,7 @@ fn main() {
         })
         .on_window_event(|app, event| {
             if let tauri::WindowEvent::Destroyed = event {
-                if let Ok(mut lock) = app.state::<SidecarState>().child.lock() {
-                    if let Some(mut child) = lock.take() {
-                        let _ = child.kill();
-                    }
-                }
+                app.state::<SidecarState>().kill_group();
             }
         })
         .run(tauri::generate_context!())
