@@ -16,11 +16,11 @@ Benchmark Apple Silicon inference and validate remaining ZPix features on MPS.
 
 | # | Task | Story | Owner | Status |
 |---|------|-------|-------|--------|
-| 1 | Fix locale fallback in `start-mac.sh` (`C` → `en-US`) | US-1.5 | @coder | Pending |
+| 1 | Fix locale fallback in `start-mac.sh` (`C` → `en-US`) | US-1.5 | @coder | **Done** |
 | 2 | Test FLUX.2-klein-4B load + generate on MPS | US-1.2 | @coder | Pending |
 | 3 | Test LoRA hot-swap on MPS | US-1.3 | @coder | Pending |
 | 4 | Test image-to-image workflow on MPS | US-1.4 | @coder | Pending |
-| 5 | Write benchmark script (automate 11 configs from test plan) | US-1.1 | @architect | Pending |
+| 5 | Write benchmark script (automate 11 configs from test plan) | US-1.1 | @architect | **Done** |
 | 6 | Run benchmark suite, collect results | US-1.1 | @tester | Pending |
 | 7 | Write benchmark-results.md with recommendations | US-1.1 | @architect | Pending |
 | 8 | PR/report findings to OGA local-server | US-1.1 | @architect | Pending |
