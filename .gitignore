@@ -14,3 +14,8 @@ DEBUG*
 .claude/
 .endiorbot/
 .sdlc-framework
+
+# Tauri / Node
+node_modules/
+src-tauri/target/
+dist/
