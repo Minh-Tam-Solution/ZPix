@@ -188,8 +188,9 @@ def cold_start():
     """Clear caches to emulate cold start."""
     gc.collect()
     if torch.backends.mps.is_available():
+        torch.mps.synchronize()
         torch.mps.empty_cache()
-    time.sleep(1)
+    time.sleep(2)
 
 
 def run_benchmark(models: list[ImageModel]) -> list[dict]:
@@ -217,6 +218,7 @@ def run_benchmark(models: list[ImageModel]) -> list[dict]:
                 "peak_memory_gb": "FAIL",
                 "status": f"LOAD_FAIL: {e}",
             })
+            write_csv(results)
             continue
 
         step_times = []
@@ -257,6 +259,9 @@ def run_benchmark(models: list[ImageModel]) -> list[dict]:
             "peak_memory_gb": round(median_peak / (1024 ** 3), 2) if isinstance(median_peak, (int, float)) else median_peak,
             "status": status,
         })
+
+        # Incremental save so crash doesn't lose everything
+        write_csv(results)
 
         del pipe
         cold_start()
@@ -311,7 +316,7 @@ def test_lora(models: list[ImageModel]) -> tuple[bool, float | str, float]:
 
     lora_dir = APP_DIR / "temp" / "loras"
     lora_dir.mkdir(parents=True, exist_ok=True)
-    lora_path = lora_dir / "disney.safetensors"
+    lora_path = lora_dir / "disney_lora.safetensors"
 
     if not lora_path.exists():
         logger.info("Downloading Disney LoRA for testing...")
@@ -319,7 +324,7 @@ def test_lora(models: list[ImageModel]) -> tuple[bool, float | str, float]:
             from huggingface_hub import hf_hub_download
             downloaded = hf_hub_download(
                 repo_id="XLabs-AI/flux-lora-collection",
-                filename="disney.safetensors",
+                filename="disney_lora.safetensors",
                 local_dir=str(lora_dir),
                 local_dir_use_symlinks=False,
             )
