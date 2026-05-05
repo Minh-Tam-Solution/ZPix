@@ -13,13 +13,13 @@ Build the foundational offline client: Tauri native app wrapper with Python side
 
 | # | Task | Story | Owner | Status |
 |---|------|-------|-------|--------|
-| 1 | Init Tauri project (`src-tauri/`) with WKWebView | US-2.1 | @architect | Pending |
-| 2 | Python sidecar integration (spawn `uv run app.py`) | US-2.1 | @coder | Pending |
-| 3 | Auto-open WebView when Gradio ready (health poll) | US-2.1 | @coder | Pending |
-| 4 | Model cache dir (`~/Library/Application Support/ZPix/models/`) | US-2.2 | @coder | Pending |
-| 5 | First-run wizard (download Z-Image-Turbo ~12GB) | US-2.2 | @coder | Pending |
-| 6 | Test `.app` bundle build + launch | US-2.1 | @tester | Pending |
-| 7 | Smoke test: generation offline (Wi-Fi disabled) | US-2.2 | @tester | Pending |
+| 1 | Init Tauri project (`src-tauri/`) with WKWebView | US-2.1 | @architect | **Done** |
+| 2 | Python sidecar integration (spawn `uv run app.py`) | US-2.1 | @coder | **Done** |
+| 3 | Auto-open WebView when Gradio ready (health poll) | US-2.1 | @coder | **Done** |
+| 4 | Model cache dir (`~/Library/Application Support/ZPix/models/`) | US-2.2 | @coder | **Done** |
+| 5 | First-run wizard (download Z-Image-Turbo ~12GB) | US-2.2 | @coder | **Done** *(auto-detect offline, no explicit wizard yet)* |
+| 6 | Test `.app` bundle build + launch | US-2.1 | @tester | **Done** |
+| 7 | Smoke test: generation offline (Wi-Fi disabled) | US-2.2 | @tester | Pending *(needs manual test on target Mac)* |
 
 ## Architecture
 
