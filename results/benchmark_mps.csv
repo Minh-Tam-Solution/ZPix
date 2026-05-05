@@ -1,0 +1,15 @@
+model,backend,resolution,steps,dtype,time_per_step,peak_memory_gb,status
+Z-Image Turbo,MPS (Diffusers),512x512,8,bf16,4.262761680558065,5.1,PASS
+Z-Image Turbo,MPS (Diffusers),768x768,8,bf16,10.64274324999941,8.0,PASS
+Z-Image Turbo,MPS (Diffusers),1024x1024,8,bf16,23.33665083333229,13.95,PASS
+Z-Image Turbo,MPS (Diffusers),512x512,8,fp16,8.810830527774264,4.99,PASS
+Z-Image Turbo,MPS (Diffusers),1024x1024,8,fp16,24.452842995336848,13.95,PASS
+FLUX.2 [klein] 4B,MPS (Diffusers),512x512,4,bf16,4.466907697744318,4.61,PASS
+FLUX.2 [klein] 4B,MPS (Diffusers),1024x1024,4,bf16,16.801254250007332,8.93,PASS
+FLUX.2 [klein] 4B,MPS (Diffusers),512x512,4,fp16,5.058474749996094,4.6,PASS
+FLUX.2 [klein] 4B,MPS (Diffusers),1024x1024,4,fp16,18.08641379175242,8.93,PASS
+Z-Image Turbo,MLX,1024x1024,8,bf16,N/A,N/A,BACKEND_NOT_AVAILABLE
+Z-Image Turbo,sd.cpp (Metal),1024x1024,8,q4_0,N/A,N/A,BACKEND_NOT_AVAILABLE
+FLUX.2 [klein] 4B,MPS (Diffusers),1024x1024,4,bf16,15.0,8.92,PASS
+FLUX.2 [klein] 4B + LoRA,MPS (Diffusers),512x512,4,bf16,4.62,4.82,PASS
+FLUX.2 [klein] 4B i2i,MPS (Diffusers),512x512,4,bf16,6.81,5.81,PASS

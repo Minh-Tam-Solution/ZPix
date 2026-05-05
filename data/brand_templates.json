@@ -1,0 +1,117 @@
+[
+  {
+    "id": "bkl-coffee",
+    "name": "BKL Coffee",
+    "tone": "Warm, cozy, premium. Vietnamese specialty coffee culture.",
+    "style_prefix": "professional photography, warm lighting, coffee shop ambiance",
+    "hashtags": ["#BKLCoffee", "#CaPheVietNam", "#NQH"],
+    "do": [
+      "Use warm brown/gold color palette",
+      "Show people enjoying coffee moments",
+      "Highlight Vietnamese coffee culture"
+    ],
+    "dont": [
+      "No competitor brand logos",
+      "No cold/clinical lighting",
+      "No generic stock photo style"
+    ],
+    "example_prompts": [
+      "A barista pouring Vietnamese egg coffee in a cozy BKL Coffee shop, warm golden light, professional food photography",
+      "Close-up of a traditional phin filter dripping dark coffee into a glass of condensed milk, rustic wooden table, warm tones"
+    ]
+  },
+  {
+    "id": "thom-fnb",
+    "name": "Thơm F&B",
+    "tone": "Fresh, vibrant, youthful. Modern Vietnamese cuisine.",
+    "style_prefix": "bright natural lighting, food photography, fresh ingredients",
+    "hashtags": ["#ThomFnB", "#AmThucViet", "#NQH"],
+    "do": [
+      "Bright, appetizing food styling",
+      "Show fresh ingredients and preparation",
+      "Vietnamese fusion modern aesthetic"
+    ],
+    "dont": [
+      "No dark/moody food photography",
+      "No messy plating",
+      "No fast food appearance"
+    ],
+    "example_prompts": [
+      "A beautifully plated Vietnamese pho bowl with fresh herbs, lime, and chili, bright natural window light, overhead shot",
+      "Chef hands preparing banh mi with colorful fresh vegetables, bright kitchen, action shot, professional food photography"
+    ]
+  },
+  {
+    "id": "airdream",
+    "name": "AirDream",
+    "tone": "Luxurious, aspirational, serene. Premium hospitality and travel.",
+    "style_prefix": "luxury lifestyle photography, soft elegant lighting, aspirational",
+    "hashtags": ["#AirDream", "#LuxuryTravel", "#NQH"],
+    "do": [
+      "Luxury resort/hotel imagery",
+      "Serene, aspirational landscapes",
+      "Premium material textures (silk, marble, wood)"
+    ],
+    "dont": [
+      "No budget/backpacker aesthetic",
+      "No crowded tourist scenes",
+      "No harsh lighting"
+    ],
+    "example_prompts": [
+      "A serene infinity pool overlooking misty Vietnamese mountains at sunrise, luxury resort, drone view, golden hour",
+      "Elegant hotel room interior with silk curtains, tropical flowers, and ocean view balcony, soft natural light"
+    ]
+  },
+  {
+    "id": "kupid",
+    "name": "Kupid",
+    "tone": "Playful, romantic, trendy. Modern dating and social lifestyle.",
+    "style_prefix": "trendy lifestyle photography, vibrant colors, social media aesthetic",
+    "hashtags": ["#Kupid", "#DatingVN", "#NQH"],
+    "do": [
+      "Vibrant, Instagram-worthy aesthetic",
+      "Young couples and social scenes",
+      "Trendy urban Vietnamese settings"
+    ],
+    "dont": [
+      "No overly formal/corporate imagery",
+      "No explicit or suggestive content",
+      "No lonely/isolated scenes"
+    ],
+    "example_prompts": [
+      "A young Vietnamese couple sharing boba tea at a trendy Saigon cafe, colorful neon signs, candid shot, warm evening light",
+      "Group of friends laughing at a rooftop bar with city skyline at sunset, lifestyle photography, vibrant colors"
+    ]
+  },
+  {
+    "id": "lhp",
+    "name": "LHP",
+    "tone": "Professional, trustworthy, innovative. Corporate and technology.",
+    "style_prefix": "corporate professional photography, clean modern aesthetic",
+    "hashtags": ["#LHP", "#Innovation", "#NQH"],
+    "do": [
+      "Clean, modern corporate imagery",
+      "Technology and innovation themes",
+      "Professional team collaboration"
+    ],
+    "dont": [
+      "No casual/informal settings",
+      "No outdated technology",
+      "No cluttered backgrounds"
+    ],
+    "example_prompts": [
+      "Modern open office with Vietnamese professionals collaborating around a digital whiteboard, natural light, clean aesthetic",
+      "Close-up of hands typing on a sleek laptop with data visualizations on screen, shallow depth of field, blue accent lighting"
+    ]
+  },
+  {
+    "id": "none",
+    "name": "No Brand (Free Style)",
+    "tone": "",
+    "style_prefix": "",
+    "hashtags": [],
+    "do": [],
+    "dont": [],
+    "example_prompts": []
+  }
+]
