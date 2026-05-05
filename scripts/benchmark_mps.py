@@ -129,8 +129,8 @@ class MPSMemoryMonitor:
                     current = torch.mps.driver_allocated_memory()
                     if current > self.peak:
                         self.peak = current
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"MPS memory monitor error: {e}")
             time.sleep(self.interval)
 
     def start(self):
@@ -457,7 +457,18 @@ def main():
 
     # Task 2: FLUX.2-klein-4B smoke test
     flux_ok, flux_data, flux_peak = test_flux_klein(models)
-    if not flux_ok:
+    if flux_ok:
+        results.append({
+            "model": "FLUX.2 [klein] 4B",
+            "backend": "MPS (Diffusers)",
+            "resolution": "1024x1024",
+            "steps": 4,
+            "dtype": "bf16",
+            "time_per_step": round(flux_data, 2) if isinstance(flux_data, (int, float)) else flux_data,
+            "peak_memory_gb": round(flux_peak / (1024 ** 3), 2) if isinstance(flux_peak, (int, float)) else flux_peak,
+            "status": "PASS",
+        })
+    else:
         results.append({
             "model": "FLUX.2 [klein] 4B",
             "backend": "MPS (Diffusers)",
@@ -471,7 +482,18 @@ def main():
 
     # Task 3: LoRA hot-swap
     lora_ok, lora_data, lora_peak = test_lora(models)
-    if not lora_ok:
+    if lora_ok:
+        results.append({
+            "model": "FLUX.2 [klein] 4B + LoRA",
+            "backend": "MPS (Diffusers)",
+            "resolution": "512x512",
+            "steps": 4,
+            "dtype": "bf16",
+            "time_per_step": round(lora_data, 2) if isinstance(lora_data, (int, float)) else lora_data,
+            "peak_memory_gb": round(lora_peak / (1024 ** 3), 2) if isinstance(lora_peak, (int, float)) else lora_peak,
+            "status": "PASS",
+        })
+    else:
         results.append({
             "model": "FLUX.2 [klein] 4B + LoRA",
             "backend": "MPS (Diffusers)",
@@ -485,7 +507,18 @@ def main():
 
     # Task 4: image-to-image
     i2i_ok, i2i_data, i2i_peak = test_image_to_image(models)
-    if not i2i_ok:
+    if i2i_ok:
+        results.append({
+            "model": "FLUX.2 [klein] 4B i2i",
+            "backend": "MPS (Diffusers)",
+            "resolution": "512x512",
+            "steps": 4,
+            "dtype": "bf16",
+            "time_per_step": round(i2i_data, 2) if isinstance(i2i_data, (int, float)) else i2i_data,
+            "peak_memory_gb": round(i2i_peak / (1024 ** 3), 2) if isinstance(i2i_peak, (int, float)) else i2i_peak,
+            "status": "PASS",
+        })
+    else:
         results.append({
             "model": "FLUX.2 [klein] 4B i2i",
             "backend": "MPS (Diffusers)",
