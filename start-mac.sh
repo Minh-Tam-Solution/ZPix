@@ -6,7 +6,10 @@ set -euo pipefail
 PORT="${PORT:-7860}"
 LOCALE="${LOCALE:-${LANG%%.*}}"
 LOCALE="${LOCALE//_/-}"
-LOCALE="${LOCALE:-en-US}"
+# Validate locale format (xx-XX). If invalid, fallback to en-US.
+if [[ ! "$LOCALE" =~ ^[a-z]{2}-[A-Z]{2}$ ]]; then
+    LOCALE="en-US"
+fi
 
 cd "$(dirname "$0")"
 
