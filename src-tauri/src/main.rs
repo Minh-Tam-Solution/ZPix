@@ -1,4 +1,5 @@
 // ZPix Tauri v2 — Native app wrapper with Python sidecar
+use std::path::PathBuf;
 use std::process::Stdio;
 use std::time::Duration;
 use tauri::{Emitter, Manager};
@@ -13,11 +14,33 @@ async fn start_python_sidecar(app: tauri::AppHandle) -> Result<String, String> {
         return Err(format!("start-mac.sh not found at {:?}", script_path));
     }
 
-    let child = std::process::Command::new("bash")
-        .arg(&script_path)
+    // Set model cache to app data dir so it's preserved across updates
+    let cache_dir: PathBuf = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| format!("App data dir error: {}", e))?
+        .join("models");
+    std::fs::create_dir_all(&cache_dir).ok();
+
+    // Detect offline mode (no internet = use cached models only)
+    let offline = !is_online().await;
+    if offline {
+        app.emit("gradioprogress", "Offline mode — using cached models")
+            .ok();
+    }
+
+    let mut cmd = std::process::Command::new("bash");
+    cmd.arg(&script_path)
         .env("PORT", "7860")
+        .env("HF_HOME", &cache_dir)
         .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stderr(Stdio::piped());
+
+    if offline {
+        cmd.env("ZPIX_OFFLINE", "1");
+    }
+
+    let child = cmd
         .spawn()
         .map_err(|e| format!("Failed to spawn start-mac.sh: {}", e))?;
 
@@ -36,14 +59,30 @@ async fn start_python_sidecar(app: tauri::AppHandle) -> Result<String, String> {
             }
             _ => {
                 if attempt % 10 == 0 {
-                    app.emit("gradioprogress", format!("Waiting for Gradio... ({}/60)", attempt))
-                        .ok();
+                    app.emit(
+                        "gradioprogress",
+                        format!("Waiting for Gradio... ({}/60)", attempt),
+                    )
+                    .ok();
                 }
             }
         }
     }
 
     Err("Gradio did not start within 60 seconds".into())
+}
+
+async fn is_online() -> bool {
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(3))
+        .build()
+        .unwrap_or_else(|_| reqwest::Client::new());
+    client
+        .head("https://huggingface.co")
+        .send()
+        .await
+        .map(|r| r.status().is_success())
+        .unwrap_or(false)
 }
 
 struct SidecarState {
