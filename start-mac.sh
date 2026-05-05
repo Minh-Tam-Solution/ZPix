@@ -11,6 +11,15 @@ if [[ ! "$LOCALE" =~ ^[a-z]{2}-[A-Z]{2}$ ]]; then
     LOCALE="en-US"
 fi
 
+# Model cache directory (default: HuggingFace default cache)
+HF_HOME="${HF_HOME:-${XDG_CACHE_HOME:-$HOME/.cache}/huggingface}"
+
+# Offline mode flag
+OFFLINE_FLAG=""
+if [[ "${ZPIX_OFFLINE:-0}" == "1" ]]; then
+    OFFLINE_FLAG="--offline"
+fi
+
 cd "$(dirname "$0")"
 
 if ! command -v uv >/dev/null 2>&1; then
@@ -28,5 +37,4 @@ if [[ ! -f .venv/mac-ready ]]; then
 fi
 
 echo "ZPix starting at http://127.0.0.1:${PORT}  (locale=${LOCALE})"
-echo "Open that URL in your browser once Gradio prints 'Running on local URL'."
-exec uv run --python .venv/bin/python app.py --port "$PORT" --locale "$LOCALE"
+exec env HF_HOME="$HF_HOME" uv run --python .venv/bin/python app.py --port "$PORT" --locale "$LOCALE" $OFFLINE_FLAG

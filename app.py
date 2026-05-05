@@ -168,20 +168,18 @@ def load_model(model: ImageModel) -> ImageModel:
         case _:
             raise ValueError(f"Unsupported pipeline class: {model.pipeline}")
 
+    load_kwargs = {"torch_dtype": torch.bfloat16}
+    if args.offline:
+        load_kwargs["local_files_only"] = True
+
     try:
-        pipe = pipe_class.from_pretrained(
-            model.id,
-            torch_dtype=torch.bfloat16,
-        )
+        pipe = pipe_class.from_pretrained(model.id, **load_kwargs)
     except Exception:
         if model.backup_id:
             logging.warning(
                 f"Can't load {model.id}, falling back to {model.backup_id}."
             )
-            pipe = pipe_class.from_pretrained(
-                model.backup_id,
-                torch_dtype=torch.bfloat16,
-            )
+            pipe = pipe_class.from_pretrained(model.backup_id, **load_kwargs)
         else:
             raise
 
@@ -431,6 +429,7 @@ if __name__ == "__main__":
     arg_parser = ArgumentParser()
     arg_parser.add_argument("--port", type=int, required=True)
     arg_parser.add_argument("--locale", type=str, required=False, default="en-US")
+    arg_parser.add_argument("--offline", action="store_true", help="Use cached models only (no internet)")
     args, _ = arg_parser.parse_known_args()
 
     with gr.Blocks(
